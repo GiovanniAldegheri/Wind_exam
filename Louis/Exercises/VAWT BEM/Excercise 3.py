@@ -3,11 +3,11 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import os
 
-os.chdir(r'G:\Other computers\Grote Laptop\Desktop\TU Delft\MSc EWEM 1\Q1-2 DTU\45300 Wind turbine technology and aerodynamics\Shared Git\Wind_exam\Louis\Exercises\VAWT BEM')
+
 
 
 # Load Input data from blade data file
-Airfoil_path = 'airfoil.txt'
+Airfoil_path = 'Louis/Exercises/VAWT BEM/airfoil.txt'
 Airfoil_data = np.loadtxt(Airfoil_path, skiprows=0)
 AoA_lst = Airfoil_data[:, 0]
 Cl_lst = Airfoil_data[:, 1]

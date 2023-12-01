@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import os
 
-os.chdir(r'G:\Other computers\Grote Laptop\Desktop\TU Delft\MSc EWEM 1\Q1-2 DTU\45300 Wind turbine technology and aerodynamics\Exercises\Excercise 3-VAWT_BEM')
+os.chdir(r'G:\Other computers\Grote Laptop\Desktop\TU Delft\MSc EWEM 1\Q1-2 DTU\45300 Wind turbine technology and aerodynamics\Shared Git\Wind_exam\Louis\Exercises\VAWT BEM')
 
 
 # Load Input data from blade data file

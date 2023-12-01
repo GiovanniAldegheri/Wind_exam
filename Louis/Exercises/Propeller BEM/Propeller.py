@@ -4,10 +4,12 @@ import os
 import matplotlib.pyplot as plt
 import math as m
 
-os.chdir(r'G:\Other computers\Grote Laptop\Desktop\TU Delft\MSc EWEM 1\Q1-2 DTU\45300 Wind turbine technology and aerodynamics\Exercises\Propeller')
+# os.chdir(r'G:\Other computers\Grote Laptop\Desktop\TU Delft\MSc EWEM 1\Q1-2 DTU\45300 Wind turbine technology and aerodynamics\Exercises\Propeller')
+path = 'Louis/Exercises/Propeller BEM/'
+
 
 # Blade Geometry
-data = np.loadtxt('data.txt', skiprows = 1)
+data = np.loadtxt(path+'data.txt', skiprows = 1)
 r = data[:, 0] * 10e-4          #m
 r = r.round(5)
 twist = np.radians(data[:, 1])  #rad

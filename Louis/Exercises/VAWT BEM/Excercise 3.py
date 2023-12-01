@@ -13,7 +13,7 @@ AoA_lst = Airfoil_data[:, 0]
 Cl_lst = Airfoil_data[:, 1]
 Cd_lst = Airfoil_data[:, 2]
 
-Exam = True
+Exam = 0
 
 # %% Function
 
@@ -224,8 +224,8 @@ if Exam:
     B = int(2)                          # Number of blades [-]
     R = 3                               # Blade radius [m]
     V_0 = 9                             # Free stream wind speed [m/s]
-    omega = 115                         # Rotational speed [RPM]
-    omega = np.radians(omega)*6         # Rotation speed [rad/s]
+    omega_rpm = 115                         # Rotational speed [RPM]
+    omega = 2*np.pi*omega_rpm/60         # Rotation speed [rad/s]
     omega = 14                          # rad/s
 
     # # Constant shape factor

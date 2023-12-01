@@ -3,11 +3,13 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
-os.chdir(r'G:\Other computers\Grote Laptop\Desktop\TU Delft\MSc EWEM 1\Q1-2 DTU\45300 Wind turbine technology and aerodynamics\Exercises\Deflection\data')
+# os.chdir(r'Louis/Exercises')
+path = 'Louis/Exercises/Deflection/data/'
 
-bladestruc = np.loadtxt('bladestruc.txt')
+bladestruc = np.loadtxt(path+'bladestruc.txt')
 
-loads_files = ['loads6.txt', 'loads11.txt', 'loads20.txt']
+# loads_files = ['loads6.txt', 'loads11.txt', 'loads20.txt']
+loads_files = ['loads_custom.txt', 'loads6.txt', 'loads11.txt']
 pitch_angles = [np.deg2rad(0.896), 0, np.deg2rad(17.35)]
 
 
@@ -96,7 +98,7 @@ def nat_freq(r, structure, pitch):
 
 
 for loads_file, pitch_angle in zip(loads_files, pitch_angles):
-    loads = np.loadtxt(loads_file)
+    loads = np.loadtxt(path+loads_file)
     loads[:,1:] = 1000*loads[:,1:]
     Ty, Tz, My, Mz, kappay, kappaz, angley, anglez, deflectiony, deflectionz = deflection(loads, bladestruc,
                                                                                           pitch_angle)

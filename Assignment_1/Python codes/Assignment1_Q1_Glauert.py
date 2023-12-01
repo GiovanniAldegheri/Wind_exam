@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
+
+
 files=['FFA-W3-301.txt','FFA-W3-301.txt','FFA-W3-360.txt','FFA-W3-480.txt','FFA-W3-600.txt','cylinder.txt']
 #Initializing tables    
 cl_tab=np.zeros([105,6])
@@ -11,7 +13,7 @@ cm_tab=np.zeros([105,6])
 aoa_tab=np.zeros([105,])
 #Readin of tables. Only do this once at startup of simulation
 for i in range(np.size(files)):
-    aoa_tab[:],cl_tab[:,i],cd_tab[:,i],cm_tab[:,i] = np.loadtxt(files[i], skiprows=0).T
+    aoa_tab[:],cl_tab[:,i],cd_tab[:,i],cm_tab[:,i] = np.loadtxt('Assignment_1/'+files[i], skiprows=0).T
 
 thick_prof=np.zeros(6)
 thick_prof[0]=24.1;
@@ -21,7 +23,7 @@ thick_prof[3]=48;
 thick_prof[4]=60;
 thick_prof[5]=100;
 
-bladedat = pd.read_csv('bladedat.txt',sep="\t", header=None)
+bladedat = pd.read_csv('Assignment_1/bladedat.txt',sep="\t", header=None)
 r_ref = bladedat[0].tolist() #m
 c_ref = bladedat[2].tolist() #m
 beta_ref = bladedat[1].tolist() #deg
@@ -133,12 +135,14 @@ rho = 1.225 #kg/m3
 Vo = 10
 
 #Interpolate over r, tip speed ratio and pitch
-if __name__ == "__main__":
-    TSR = np.arange(5,10+1,1)
-else:
-    TSR = np.arange(0,10+1,1)
 
-pitch = np.arange(-3,4+1,1)
+RPM = 1.5
+TSR = np.arange(RPM*R/Vo,RPM*R/Vo+1)
+# TSR = np.arange(0,10+1,1)
+# TSR = np.arange(15.8,16,0.01)
+
+# pitch = np.arange(-3,4+1,1)
+pitch = np.arange(0,1)
 
 #Blade characteristics
 P_max = 0
@@ -156,6 +160,7 @@ for i in range(len(TSR)):
         Pt_lst = []
         for k in range(len(r_ref)):
             Pn, Pt = BEM(TSR[i],pitch[j],r_ref[k],c_ref[k],beta_ref[k],tc_ref[k],aoa_tab,cl_tab,cd_tab,cm_tab)
+            # print(r_ref[k], Pn)
             Pn_lst.append(Pn)
             Pt_lst.append(Pt*r_ref[k])
 
@@ -171,11 +176,21 @@ for i in range(len(TSR)):
             TSR_max = TSR[i]
             pitch_max = pitch[j]
 
-        print('Cp =',format(Cp[i,j],'.6f'), '\tTSR =',TSR[i], '\tpitch =', pitch[j])       
+        print('Cp =',format(Cp[i,j],'.6f'), '\tTSR =',TSR[i], '\tpitch =', pitch[j], '\tPower =', P)       
 print('\nBest values', '\nCp =', format(Cp_max,'.6f'), '\tPower(MW) =', round(P_max/1e6,3), '\tTSR =',TSR_max, '\tpitch =', pitch_max,'\n')
 
+loads = False
+if loads:
+    print('# Vo=',Vo,'m/s, pitch=',pitch[0],' deg, omega=',TSR[0]*Vo/R,' rad/s')
+    print('#    r [m]   pn [kN/m]  pt [kN/m]')
+    for i in range(len(Pn_lst)):
+        print('  ',round(r_ref[i],4),'  ',round(Pn_lst[i],4),'  ',round(Pt_lst[i],4))
+    print('   89.1660         0         0')
+
+plot = False
+
 #Plot the results in a countour plot
-if __name__ == "__main__":
+if plot:
     contourplots(pitch, TSR, Cp, Ct)
 # plt.show()
 

@@ -4,12 +4,13 @@ import os
 import matplotlib.pyplot as plt
 
 # os.chdir(r'Louis/Exercises')
-path = 'Louis/Exercises/Deflection/data/'
+os.chdir(r'G:/Other computers/Grote Laptop/Desktop/TU Delft/MSc EWEM 1/Q1-2 DTU/45300 Wind turbine technology and aerodynamics/Shared Git/Wind_exam/Louis/Exercises/Deflection/data')
+# path = 'Louis/Exercises/Deflection/data/'
 
-bladestruc = np.loadtxt(path+'bladestruc.txt')
+bladestruc = np.loadtxt('bladestruc.txt')
 
 # loads_files = ['loads6.txt', 'loads11.txt', 'loads20.txt']
-loads_files = ['loads_custom.txt', 'loads6.txt', 'loads11.txt']
+loads_files = ['loads_custom.txt']
 pitch_angles = [np.deg2rad(0.896), 0, np.deg2rad(17.35)]
 
 
@@ -96,92 +97,125 @@ def nat_freq(r, structure, pitch):
 
     return eig_freq, mode_shapes
 
+Exercise = True
+Iterative = False
 
-for loads_file, pitch_angle in zip(loads_files, pitch_angles):
-    loads = np.loadtxt(path+loads_file)
-    loads[:,1:] = 1000*loads[:,1:]
-    Ty, Tz, My, Mz, kappay, kappaz, angley, anglez, deflectiony, deflectionz = deflection(loads, bladestruc,
-                                                                                          pitch_angle)
-    eig_freq, mode_shapes = nat_freq(loads[:, 0], bladestruc, pitch_angle)
-    plt.rcParams['axes.grid'] = True
+if Iterative == True:
+    #In this case (Exam 2020), iterate for constant pn until z deflection at tip = 5m
+    r = bladestruc[:,0]
+    pn_const = 0
+    deflectionz = np.zeros(len(r))
 
-    plt.figure(figsize=(16, 5))
-    plt.subplot(1, 3, 1)
-    plt.plot(loads[:, 0], loads[:, 2]/1000, label='py')
-    plt.plot(loads[:, 0], loads[:, 1]/1000, label='pz')
-    plt.title(f'Loads for {loads_file} (Pitch Angle: {np.rad2deg(pitch_angle):.2f} degrees)')
-    plt.xlabel('Radius (m)')
-    plt.ylabel('Load (kN)')
-    plt.legend()
+    pitch_angle = 0
 
-    plt.subplot(1, 3, 2)
-    plt.plot(loads[:, 0], Ty/1000, label='Ty')
-    plt.plot(loads[:, 0], Tz/1000, label='Tz')
-    plt.title(f'Shear stress for {loads_file} \n (Pitch Angle: {np.rad2deg(pitch_angle):.2f} degrees)')
-    plt.xlabel('Radius (m)')
-    plt.ylabel('Shear stress (kN)')
-    plt.legend()
+    while deflectionz[-1] <= 5:
+        pn_const += 1
+        pn = np.full(len(r),pn_const)
+        pt = np.zeros(len(r))
+        loads = np.transpose([r,pn,pt])
 
-    plt.subplot(1, 3, 3)
-    plt.plot(loads[:, 0]/1000, My, label='My')
-    plt.plot(loads[:, 0]/1000, Mz, label='Mz')
-    plt.title(f'Bending Moments for {loads_file} \n (Pitch Angle: {np.rad2deg(pitch_angle):.2f} degrees)')
-    plt.xlabel('Radius (m)')
-    plt.ylabel('Bending Moment (kNm)')
-    plt.legend()
+        Ty, Tz, My, Mz, kappay, kappaz, angley, anglez, deflectiony, deflectionz = deflection(loads, bladestruc, pitch_angle)
 
-    # Plot deflection and angles
-    plt.figure(figsize=(16, 5))
-    plt.subplot(1, 3, 1)
-    plt.plot(loads[:, 0], np.rad2deg(kappay), label='Kappa Y')
-    plt.plot(loads[:, 0], np.rad2deg(kappaz), label='Kappa Z')
-    plt.title(f'Bending stiffness for {loads_file} \n (Pitch Angle: {np.rad2deg(pitch_angle):.2f} degrees)')
-    plt.xlabel('Radius (m)')
-    plt.ylabel('Bending Stiffness (deg/m)')
-    plt.legend()
+        print('pn =',pn_const,'[N/m] \t Tip deflection =',deflectionz[-1],'[m]')
 
-    plt.subplot(1, 3, 2)
-    plt.plot(loads[:, 0], np.rad2deg(angley), label='Angle Y')
-    plt.plot(loads[:, 0], np.rad2deg(anglez), label='Angle Z')
-    plt.title(f'Angles for {loads_file} \n (Pitch Angle: {np.rad2deg(pitch_angle):.2f} degrees)')
-    plt.xlabel('Radius (m)')
-    plt.ylabel('Angle (deg)')
-    plt.legend()
+    bladestruc[:, 2] = bladestruc [:, 2] * 1.1  #Mass distribution increased by 10%
 
-    plt.subplot(1, 3, 3)
-    plt.plot(loads[:, 0], deflectiony, label='Deflection Y')
-    plt.plot(loads[:, 0], deflectionz, label='Deflection Z')
-    plt.title(f'Deflection for {loads_file} \n (Pitch Angle: {np.rad2deg(pitch_angle):.2f} degrees)')
-    plt.xlabel('Radius (m)')
-    plt.ylabel('Deflection (m)')
-    plt.legend()
-    plt.tight_layout()
+    eig_freq, mode_shapes = nat_freq(r, bladestruc, pitch_angle)
+    print(eig_freq)
 
-    plt.figure(figsize=(15, 5))
 
-    plt.subplot(1, 3, 1)
-    plt.plot(loads[:, 0], mode_shapes[:, 0], label='Tangential Mode Shape')
-    plt.plot(loads[:, 0], mode_shapes[:, 3], label='Normal Mode Shape')
-    plt.title(f'Mode Shape 1 for {loads_file} \n Eigenfrequency: {eig_freq[0]:.2f} Rad/s')
-    plt.xlabel('Radius (m)')
-    plt.ylabel('Normalized Displacement (-)')
-    plt.legend()
+if Exercise == True:
+    for loads_file, pitch_angle in zip(loads_files, pitch_angles):
+        loads = np.loadtxt(loads_file)
+        loads[:,1:] = 1000*loads[:,1:]
+        Ty, Tz, My, Mz, kappay, kappaz, angley, anglez, deflectiony, deflectionz = deflection(loads, bladestruc,
+                                                                                            pitch_angle)
+        eig_freq, mode_shapes = nat_freq(loads[:, 0], bladestruc, pitch_angle)
+        
+        index = np.where(loads[:,0] == 58.5344)
+        print(loads_file, 'My =',My[index],'\t Mz =',Mz[index])
 
-    plt.subplot(1, 3, 2)
-    plt.plot(loads[:, 0], mode_shapes[:, 1], label='Tangential Mode Shape')
-    plt.plot(loads[:, 0], mode_shapes[:, 4], label='Normal Mode Shape')
-    plt.title(f'Mode Shape 2 for {loads_file} \n Eigenfrequency: {eig_freq[1]:.2f} Rad/s')
-    plt.xlabel('Radius (m)')
-    plt.ylabel('Normalized Displacement (-)')
-    plt.legend()
+        plot = False
+        if plot == True:
+            plt.rcParams['axes.grid'] = True
 
-    plt.subplot(1, 3, 3)
-    plt.plot(loads[:, 0], mode_shapes[:, 2], label='Tangential Mode Shape')
-    plt.plot(loads[:, 0], mode_shapes[:, 5], label='Normal Mode Shape')
-    plt.title(f'Mode Shape 3 for {loads_file} \n Eigenfrequency: {eig_freq[2]:.2f} Rad/s')
-    plt.xlabel('Radius (m)')
-    plt.ylabel('Normalized Displacement (-)')
-    plt.legend()
+            plt.figure(figsize=(16, 5))
+            plt.subplot(1, 3, 1)
+            plt.plot(loads[:, 0], loads[:, 2]/1000, label='py')
+            plt.plot(loads[:, 0], loads[:, 1]/1000, label='pz')
+            plt.title(f'Loads for {loads_file} (Pitch Angle: {np.rad2deg(pitch_angle):.2f} degrees)')
+            plt.xlabel('Radius (m)')
+            plt.ylabel('Load (kN)')
+            plt.legend()
 
-    plt.tight_layout()
-plt.show()
+            plt.subplot(1, 3, 2)
+            plt.plot(loads[:, 0], Ty/1000, label='Ty')
+            plt.plot(loads[:, 0], Tz/1000, label='Tz')
+            plt.title(f'Shear stress for {loads_file} /n (Pitch Angle: {np.rad2deg(pitch_angle):.2f} degrees)')
+            plt.xlabel('Radius (m)')
+            plt.ylabel('Shear stress (kN)')
+            plt.legend()
+
+            plt.subplot(1, 3, 3)
+            plt.plot(loads[:, 0]/1000, My, label='My')
+            plt.plot(loads[:, 0]/1000, Mz, label='Mz')
+            plt.title(f'Bending Moments for {loads_file} /n (Pitch Angle: {np.rad2deg(pitch_angle):.2f} degrees)')
+            plt.xlabel('Radius (m)')
+            plt.ylabel('Bending Moment (kNm)')
+            plt.legend()
+
+            # Plot deflection and angles
+            plt.figure(figsize=(16, 5))
+            plt.subplot(1, 3, 1)
+            plt.plot(loads[:, 0], np.rad2deg(kappay), label='Kappa Y')
+            plt.plot(loads[:, 0], np.rad2deg(kappaz), label='Kappa Z')
+            plt.title(f'Bending stiffness for {loads_file} /n (Pitch Angle: {np.rad2deg(pitch_angle):.2f} degrees)')
+            plt.xlabel('Radius (m)')
+            plt.ylabel('Bending Stiffness (deg/m)')
+            plt.legend()
+
+            plt.subplot(1, 3, 2)
+            plt.plot(loads[:, 0], np.rad2deg(angley), label='Angle Y')
+            plt.plot(loads[:, 0], np.rad2deg(anglez), label='Angle Z')
+            plt.title(f'Angles for {loads_file} /n (Pitch Angle: {np.rad2deg(pitch_angle):.2f} degrees)')
+            plt.xlabel('Radius (m)')
+            plt.ylabel('Angle (deg)')
+            plt.legend()
+
+            plt.subplot(1, 3, 3)
+            plt.plot(loads[:, 0], deflectiony, label='Deflection Y')
+            plt.plot(loads[:, 0], deflectionz, label='Deflection Z')
+            plt.title(f'Deflection for {loads_file} /n (Pitch Angle: {np.rad2deg(pitch_angle):.2f} degrees)')
+            plt.xlabel('Radius (m)')
+            plt.ylabel('Deflection (m)')
+            plt.legend()
+            plt.tight_layout()
+
+            plt.figure(figsize=(15, 5))
+
+            plt.subplot(1, 3, 1)
+            plt.plot(loads[:, 0], mode_shapes[:, 0], label='Tangential Mode Shape')
+            plt.plot(loads[:, 0], mode_shapes[:, 3], label='Normal Mode Shape')
+            plt.title(f'Mode Shape 1 for {loads_file} /n Eigenfrequency: {eig_freq[0]:.2f} Rad/s')
+            plt.xlabel('Radius (m)')
+            plt.ylabel('Normalized Displacement (-)')
+            plt.legend()
+
+            plt.subplot(1, 3, 2)
+            plt.plot(loads[:, 0], mode_shapes[:, 1], label='Tangential Mode Shape')
+            plt.plot(loads[:, 0], mode_shapes[:, 4], label='Normal Mode Shape')
+            plt.title(f'Mode Shape 2 for {loads_file} /n Eigenfrequency: {eig_freq[1]:.2f} Rad/s')
+            plt.xlabel('Radius (m)')
+            plt.ylabel('Normalized Displacement (-)')
+            plt.legend()
+
+            plt.subplot(1, 3, 3)
+            plt.plot(loads[:, 0], mode_shapes[:, 2], label='Tangential Mode Shape')
+            plt.plot(loads[:, 0], mode_shapes[:, 5], label='Normal Mode Shape')
+            plt.title(f'Mode Shape 3 for {loads_file} /n Eigenfrequency: {eig_freq[2]:.2f} Rad/s')
+            plt.xlabel('Radius (m)')
+            plt.ylabel('Normalized Displacement (-)')
+            plt.legend()
+
+            plt.tight_layout()
+        plt.show()

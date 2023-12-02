@@ -2,8 +2,11 @@ import math as m
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+import os
 
 
+# os.chdir(r'Louis/Exercises/HAWT BEM/data')
+os.chdir(r'G:\Other computers\Grote Laptop\Desktop\TU Delft\MSc EWEM 1\Q1-2 DTU\45300 Wind turbine technology and aerodynamics\Shared Git\Wind_exam\Louis\Exercises\HAWT BEM\data')
 
 files=['FFA-W3-301.txt','FFA-W3-301.txt','FFA-W3-360.txt','FFA-W3-480.txt','FFA-W3-600.txt','cylinder.txt']
 #Initializing tables    
@@ -13,7 +16,7 @@ cm_tab=np.zeros([105,6])
 aoa_tab=np.zeros([105,])
 #Readin of tables. Only do this once at startup of simulation
 for i in range(np.size(files)):
-    aoa_tab[:],cl_tab[:,i],cd_tab[:,i],cm_tab[:,i] = np.loadtxt('Assignment_1/'+files[i], skiprows=0).T
+    aoa_tab[:],cl_tab[:,i],cd_tab[:,i],cm_tab[:,i] = np.loadtxt(files[i], skiprows=0).T
 
 thick_prof=np.zeros(6)
 thick_prof[0]=24.1;
@@ -23,7 +26,7 @@ thick_prof[3]=48;
 thick_prof[4]=60;
 thick_prof[5]=100;
 
-bladedat = pd.read_csv('Assignment_1/bladedat.txt',sep="\t", header=None)
+bladedat = pd.read_csv('bladedat.txt',sep="\t", header=None)
 r_ref = bladedat[0].tolist() #m
 c_ref = bladedat[2].tolist() #m
 beta_ref = bladedat[1].tolist() #deg
@@ -92,59 +95,71 @@ def BEM(TSR,pitch,r,c,twist,thick,aoa_tab,cl_tab,cd_tab,cm_tab):
             print("No convergence!")
             break
 
-        flowAngle = m.atan(((1-a)*R)/((1+aprime)*TSR*r))
+        flowAngle = m.atan(((1 - a) * R) / ((1 + aprime) * TSR * r))
         localalpha =  m.degrees(flowAngle) - (pitch + twist)
 
-        Cl,Cd,Cm = force_coeffs(localalpha,thick,aoa_tab,cl_tab,cd_tab,cm_tab)
+        Cl,Cd,Cm = force_coeffs(localalpha, thick, aoa_tab, cl_tab, cd_tab, cm_tab)
         Ct = Cl*m.sin(flowAngle) - Cd*m.cos(flowAngle)
         Cn = Cl*m.cos(flowAngle) + Cd*m.sin(flowAngle)
 
-        F = 2/m.pi*m.acos(m.exp(-B*(R-r)/(2*r*m.sin(abs(flowAngle)))))
-
-        CT = ((1-a)**2*Cn*solidity)/m.sin(flowAngle)**2
+        F = 2 / m.pi * m.acos(m.exp(-B * (R-r) / (2 * r *m.sin(abs(flowAngle)))))
+        CT = ((1 - a)**2 * Cn * solidity) / m.sin(flowAngle)**2
 
         aold = a
-
         if(aold < 0.33):
-            a = (solidity*Cn*(1-aold))/(4*F*m.sin(flowAngle)**2)
+            a = (solidity * Cn * (1 - aold)) / (4 * F * m.sin(flowAngle)**2)
         else:
-            aStar = CT/(4*F*(1-1/4*(5-3*aold)*aold))
-            a = relax*aStar + (1-relax)*aold
+            aStar = CT / (4 *F*(1 - 1/4 * (5 - 3 * aold) * aold))
+            a = relax * aStar + (1 - relax) * aold
 
         aprimeOld  = aprime
-        aprimeStar = (solidity*Ct*(1+aprimeOld))/(4*F*m.sin(flowAngle)*m.cos(flowAngle))
-        aprime = relax*aprimeStar + (1-relax)*aprimeOld
+        aprimeStar = (solidity * Ct * (1 + aprimeOld)) / (4 * F * m.sin(flowAngle) * m.cos(flowAngle))
+        aprime = relax * aprimeStar + (1 - relax) * aprimeOld
 
         delta = abs(aprime - aprimeOld)
         deltaPrime = abs(aprime - aprimeOld)
 
-    Vrel = m.sqrt(Vo**2+(w*r)**2)
+    Vrel = m.sqrt(Vo**2+ (omega * r)**2)
 
-    Pn = 0.5*rho*Vrel**2*c*Cn
-    Pt = 0.5*rho*Vrel**2*c*Ct
+    Pn = 0.5 * rho * Vrel**2 * c * Cn
+    Pt = 0.5 * rho * Vrel**2 * c * Ct
 
     if (m.isnan(Pt)|(m.isnan(Pn))):
         Pt, Pn = 0,0
 
     return(Pn, Pt)
 
+def single_BEM_loop():
+    for k in range(len(r_ref)):
+        Pn, Pt = BEM(TSR,pitch,r_ref[k],c_ref[k],beta_ref[k],tc_ref[k],aoa_tab,cl_tab,cd_tab,cm_tab)
+        # print(r_ref[k], Pn)
+        Pn_lst[k] = (Pn)
+        Pt_lst[k] = (Pt * r_ref[k])
+
+    T = np.trapz(Pn_lst,r_ref)*B
+    P = np.trapz(Pt_lst,r_ref)*omega*B
+
+    Cp = P/(0.5*rho*Vo**3*m.pi*R**2)
+    Ct = T/(0.5*rho*Vo**2*m.pi*R**2)
+    return P, T, Cp, Ct
+
 #Constants______________
+iterative_BEM_loop = True
+
 R = 89.17 #m
 B = 3
 rho = 1.225 #kg/m3
-Vo = 10
-
-# Vo=6m/s, pitch=0.896 deg, omega=0.6283 rad/s
+Vo = 15
 
 #Interpolate over r, tip speed ratio and pitch
 
-omega = 1.5       #rad/s
-TSR = np.arange(omega*R/Vo,omega*R/Vo+1)
-# TSR = np.arange(0,10+1,1)
-# TSR = np.arange(15.8,16,0.01)
+# RPM = 1.5
+omega = 1.2
+TSR = omega * R / Vo
+# TSR = np.arange(RPM*R/Vo,RPM*R/Vo+1)
 
-# pitch = np.arange(-3,4+1,1)
-pitch = np.arange(0,1)
+# pitch = np.arange(0,1)
+pitch = 0
 
 #Blade characteristics
 P_max = 0
@@ -152,47 +167,21 @@ Cp_max = 0
 TSR_max = 0
 pitch_max = 0
 
-Cp=np.zeros([len(TSR),len(pitch)])
-Ct=np.zeros([len(TSR),len(pitch)])
+# Cp=np.zeros([len(TSR),len(pitch)])
+# Ct=np.zeros([len(TSR),len(pitch)])
 
-for i in range(len(TSR)):
-    w = TSR[i]*Vo/R
-    for j in range(len(pitch)):
-        Pn_lst = np.zeros(len(r_ref))
-        Pt_lst = np.zeros(len(r_ref))
-        for k in range(len(r_ref)):
-            Pn, Pt = BEM(TSR[i],pitch[j],r_ref[k],c_ref[k],beta_ref[k],tc_ref[k],aoa_tab,cl_tab,cd_tab,cm_tab)
-            # print(r_ref[k], Pn)
-            Pn_lst[k] = Pn
-            Pt_lst[k] = Pt
+Pn_lst = np.zeros(len(r_ref))
+Pt_lst = np.zeros(len(r_ref))
 
-        T = np.trapz(Pn_lst, r_ref) * B
-        P = np.trapz(Pt_lst * r_ref, r_ref) * w * B
+def iterative_BEM_loop_pitch():
+    pitch = np.arange(0,15,0.1)
+    pitch = np.round(pitch,1)
+    P = 0
 
-        Cp[i,j] = P/(0.5*rho*Vo**3*m.pi*R**2)
-        Ct[i,j] = T/(0.5*rho*Vo**2*m.pi*R**2)
+    for ii, pitch in enumerate(pitch):
+        P, T, Cp, Ct = single_BEM_loop()
+        print('Pitch = ',pitch,'[deg] \t P = ',P,'[W]')
+        if P <= 10e6:
+            break
 
-        if (Cp_max < Cp[i,j]):  
-            Cp_max = Cp[i,j]
-            P_max = P
-            TSR_max = TSR[i]
-            pitch_max = pitch[j]
-
-        print('Cp =',format(Cp[i,j],'.6f'), '\tTSR =',TSR[i], '\tpitch =', pitch[j], '\tPower =', P)       
-print('\nBest values', '\nCp =', format(Cp_max,'.6f'), '\tPower(MW) =', round(P_max/1e6,3), '\tTSR =',TSR_max, '\tpitch =', pitch_max,'\n')
-
-loads = True
-if loads:
-    print('# Vo=',Vo,'m/s, pitch=',pitch[0],' deg, omega=',w,' rad/s')
-    print('#    r [m]   pn [kN/m]  pt [kN/m]')
-    for i in range(len(Pn_lst)):
-        print('  ',round(r_ref[i],4),'  ',round(Pn_lst[i]/1000,4),'  ',round(Pt_lst[i]/1000,4))
-    print('   89.1660         0         0')
-
-plot = False
-
-#Plot the results in a countour plot
-if plot:
-    contourplots(pitch, TSR, Cp, Ct)
-# plt.show()
 

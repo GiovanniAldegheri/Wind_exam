@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 
 f = 60
 omega = 2*m.pi*f
-V1_nominal = 0.69e3
-V2_nominal = 10e3
+V1_nominal = 10e3
+V2_nominal = 0.69e3
 RATIO = V1_nominal/V2_nominal
 
 def bring_to_secondary(x): #works only for impedences

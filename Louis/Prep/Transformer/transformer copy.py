@@ -73,7 +73,7 @@ print('z1 =', z1_p, '\nz2_p =', z2_p, '\nze =', ze)
 
 V1 = line_to_neutral(10e3)
 
-load = True
+load = False
 if load:
     Rl_s = 0.16
     # Ll_s = np.arange(500e-6,400e-5,1e-6)

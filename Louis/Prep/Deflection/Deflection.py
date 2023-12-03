@@ -3,11 +3,10 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
-# os.chdir(r'Louis/Exercises')
-#os.chdir(r'G:/Other computers/Grote Laptop/Desktop/TU Delft/MSc EWEM 1/Q1-2 DTU/45300 Wind turbine technology and aerodynamics/Shared Git/Wind_exam/Louis/Exercises/Deflection/data')
+# os.chdir('data')
+# os.chdir(r'G:/Other computers/Grote Laptop/Desktop/TU Delft/MSc EWEM 1/Q1-2 DTU/45300 Wind turbine technology and aerodynamics/Shared Git/Wind_exam/Louis/Exercises/Deflection/data')
 # path = 'Louis/Exercises/Deflection/data/'
-os.chdir(r'C:/Users/aldeg/Documents/Programming/Wind/Wind_exam/Louis/Exercises/Deflection/data')
-
+# path = 'C:/Users/aldeg/Documents/Programming/Wind/Wind_Exam/Louis/Exercises/Deflection/data/'
 
 bladestruc = np.loadtxt('bladestruc.txt')
 
@@ -100,12 +99,12 @@ def nat_freq(r, structure, pitch):
     return eig_freq, mode_shapes
 
 Exercise = True
-Iterative = True
+Iterative = False
 
 if Iterative == True:
     #In this case (Exam 2020), iterate for constant pn until z deflection at tip = 5m
     r = bladestruc[:,0]
-    pn_const = 64
+    pn_const = 0
     deflectionz = np.zeros(len(r))
 
     pitch_angle = 0
@@ -113,10 +112,8 @@ if Iterative == True:
     deflection_exercise = True
     if deflection_exercise == True:
         while deflectionz[-1] <= 5:
-            pn_const += 0.001
+            pn_const += 1
             pn = np.full(len(r),pn_const)
-            for i in range(len(pn)):
-                pn[i] = pn_const*r[i]
             pt = np.zeros(len(r))
             loads = np.transpose([r,pn,pt])
 
@@ -135,10 +132,7 @@ if Iterative == True:
 if Exercise == True:
     for loads_file, pitch_angle in zip(loads_files, pitch_angles):
         loads = np.loadtxt(loads_file)
-        print(pn_const,pn)
-        loads[:,1] = pn
-        loads[:,2] = np.zeros(len(loads[:,2]))
-        # loads[:,1:] *= 1000
+        loads[:,1:] = 1000*loads[:,1:]
         Ty, Tz, My, Mz, kappay, kappaz, angley, anglez, deflectiony, deflectionz = deflection(loads, bladestruc,
                                                                                             pitch_angle)
         eig_freq, mode_shapes = nat_freq(loads[:, 0], bladestruc, pitch_angle)

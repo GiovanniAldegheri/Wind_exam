@@ -181,7 +181,7 @@ def iterative_BEM_loop_pitch():
     P = 0
 
     for ii, pitch in enumerate(pitch):
-        P, T, Cp, Ct = single_BEM_loop()
+        P, T, Cp, Ct, Pn_lst, Pt_lst = single_BEM_loop()
         print('Pitch = ',pitch,'[deg] \t P = ',P,'[W]')
         if P <= 10e6:
             break

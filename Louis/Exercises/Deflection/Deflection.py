@@ -5,11 +5,12 @@ import matplotlib.pyplot as plt
 
 # os.chdir(r'Louis/Exercises')
 path = 'Louis/Exercises/Deflection/data/'
+path = 'C:/Users/aldeg/Documents/Programming/Wind/Wind_Exam/Louis/Exercises/Deflection/data/'
 
 bladestruc = np.loadtxt(path+'bladestruc.txt')
 
-# loads_files = ['loads6.txt', 'loads11.txt', 'loads20.txt']
-loads_files = ['loads_custom.txt', 'loads6.txt', 'loads11.txt']
+loads_files = ['loads6.txt', 'loads11.txt', 'loads20.txt']
+# loads_files = ['loads_custom.txt', 'loads6.txt', 'loads11.txt']
 pitch_angles = [np.deg2rad(0.896), 0, np.deg2rad(17.35)]
 
 
@@ -58,7 +59,8 @@ def deflection(loads, structure, pitch):
 
 
 def nat_freq(r, structure, pitch):
-    m = 0.5 * (bladestruc[1:, 2] + bladestruc[:-1, 2])
+    # m = 0.5 * (bladestruc[1:, 2] + bladestruc[:-1, 2])
+    m = bladestruc[1:, 2]
     M = np.diag(np.concatenate([m, m]))
 
     F = np.zeros(np.shape(M))

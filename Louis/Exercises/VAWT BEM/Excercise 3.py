@@ -22,7 +22,7 @@ def VAWT_BEM(V_0, B, S, R, omega, dt, t_end):
     # Initialise t and a
     t = np.arange(0, t_end+dt, dt)
     a = np.zeros(len(t))
-    print(t)
+
     # initialise total rotated angle and local blade angle, relative to azimuth
     theta_gen = np.zeros(len(t))
     theta = np.zeros((len(t), B))
@@ -90,6 +90,7 @@ def VAWT_BEM(V_0, B, S, R, omega, dt, t_end):
             # find p_n, p_t
             p_n[t_i, b_i] = l * np.cos(AoA) + d * np.sin(AoA)
             p_t[t_i, b_i] = l * np.sin(AoA) - d * np.cos(AoA)
+ 
 
         # Get total force in y, x and combined for all blades
         p_y_tot[t_i] = np.sum(p_y[t_i, :])
@@ -154,10 +155,10 @@ def VAWT_EXAM_BEM(V_0, B, S, R, omega, dt):
             # Calc W_x,i and W_y,i
             x = -R * np.sin(theta[t_i, b_i])
             y = R * np.cos(theta[t_i, b_i])
-            W_x = W_0 * (1 - 0.4 * np.sin(theta[t_i, b_i]))
-            W_y = 0.4 * W_x * np.cos(theta[t_i, b_i])
-            # W_x = 3.4
-            # W_y = 0
+            # W_x = W_0 * (1 - 0.4 * np.sin(theta[t_i, b_i]))
+            # W_y = 0.4 * W_x * np.cos(theta[t_i, b_i])
+            W_x = 3.4
+            W_y = 0
 
             # Calculate all relative wind speeds
             V_rel_x = omega*y + V_0 - W_x
@@ -168,10 +169,13 @@ def VAWT_EXAM_BEM(V_0, B, S, R, omega, dt):
 
             # Interpolate for Cd and Cl
             AoA = np.arctan(V_norm/V_tan)
-            # Cl = np.interp(np.degrees(AoA), AoA_lst, Cl_lst)
-            # Cd = np.interp(np.degrees(AoA), AoA_lst, Cd_lst)
-            Cl = 0.1 * AoA
-            Cd = 0.01
+            Cl = np.interp(np.degrees(AoA), AoA_lst, Cl_lst)
+            Cd = np.interp(np.degrees(AoA), AoA_lst, Cd_lst)
+            # Cl = 0.1 * np.degrees(AoA)
+            # Cd = 0.01
+            
+            # if np.round(theta[t_i,0],2) in np.round(np.arange(np.pi/2 , 55*np.pi/2, 2*np.pi),2):
+            #     print('Blade',b_i,'\t Round error =',theta[t_i,b_i] % (np.pi/2), 'Cl =', Cl)
 
             # Store AoA for the blade
             AoA_1[t_i, b_i] = AoA
@@ -272,7 +276,7 @@ if not Exam:
     plot_start = 0          # Indicate start time for plots
     dt = 1e-3
 
-    B = np.arange(3, 4)
+    B = np.arange(2, 3)
     dt = 1e-3
     fig, (ax0, ax1) = plt.subplots(nrows=2, ncols=2, figsize=(14, 8))
     labels = []

@@ -129,7 +129,7 @@ def BEM(TSR,pitch,r,c,twist,thick,aoa_tab,cl_tab,cd_tab,cm_tab):
 
     return(Pn, Pt)
 
-def single_BEM_loop():
+def single_BEM_loop(pitch):
     for k in range(len(r_ref)):
         Pn, Pt = BEM(TSR,pitch,r_ref[k],c_ref[k],beta_ref[k],tc_ref[k],aoa_tab,cl_tab,cd_tab,cm_tab)
         # print(r_ref[k], Pn)
@@ -174,14 +174,15 @@ Pn_lst = np.zeros(len(r_ref))
 Pt_lst = np.zeros(len(r_ref))
 
 def iterative_BEM_loop_pitch():
-    pitch = np.arange(0,15,0.1)
+    pitch = np.arange(5,15,0.1)
     pitch = np.round(pitch,1)
     P = 0
 
     for ii, pitch in enumerate(pitch):
-        P, T, Cp, Ct = single_BEM_loop()
+        P, T, Cp, Ct = single_BEM_loop(pitch)
         print('Pitch = ',pitch,'[deg] \t P = ',P,'[W]')
         if P <= 10e6:
             break
 
+iterative_BEM_loop_pitch()
 

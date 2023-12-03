@@ -59,9 +59,9 @@ def deflection(loads, structure, pitch):
 
 
 def nat_freq(r, structure, pitch):
-    m = 0.5 * (bladestruc[1:, 2] + bladestruc[:-1, 2])
+    # m = 0.5 * (bladestruc[1:, 2] + bladestruc[:-1, 2])
+    m = bladestruc[:, 2]
     M = np.diag(np.concatenate([m, m]))
-
     F = np.zeros(np.shape(M))
     N = len(r)
     # for y
@@ -97,8 +97,8 @@ def nat_freq(r, structure, pitch):
 
     return eig_freq, mode_shapes
 
-Exercise = True
-Iterative = False
+Exercise = False
+Iterative = True
 
 if Iterative == True:
     #In this case (Exam 2020), iterate for constant pn until z deflection at tip = 5m
@@ -108,20 +108,24 @@ if Iterative == True:
 
     pitch_angle = 0
 
-    while deflectionz[-1] <= 5:
-        pn_const += 1
-        pn = np.full(len(r),pn_const)
-        pt = np.zeros(len(r))
-        loads = np.transpose([r,pn,pt])
+    deflection_exercise = True
+    if deflection_exercise == True:
+        while deflectionz[-1] <= 5:
+            pn_const += 1
+            pn = np.full(len(r),pn_const)
+            pt = np.zeros(len(r))
+            loads = np.transpose([r,pn,pt])
 
-        Ty, Tz, My, Mz, kappay, kappaz, angley, anglez, deflectiony, deflectionz = deflection(loads, bladestruc, pitch_angle)
+            Ty, Tz, My, Mz, kappay, kappaz, angley, anglez, deflectiony, deflectionz = deflection(loads, bladestruc, pitch_angle)
 
-        print('pn =',pn_const,'[N/m] \t Tip deflection =',deflectionz[-1],'[m]')
+            print('pn =',pn_const,'[N/m] \t Tip deflection =',deflectionz[-1],'[m]')
 
-    bladestruc[:, 2] = bladestruc [:, 2] * 1.1  #Mass distribution increased by 10%
-
+    
     eig_freq, mode_shapes = nat_freq(r, bladestruc, pitch_angle)
-    print(eig_freq)
+    print('normal mass',eig_freq)
+    bladestruc[:, 2] *= 1.1  #Mass distribution increased by 10%
+    eig_freq, mode_shapes = nat_freq(r, bladestruc, pitch_angle)
+    print('increased mass',eig_freq)
 
 
 if Exercise == True:

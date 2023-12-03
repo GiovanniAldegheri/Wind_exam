@@ -3,10 +3,10 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
-# os.chdir(r'Louis/Exercises')
-os.chdir(r'G:/Other computers/Grote Laptop/Desktop/TU Delft/MSc EWEM 1/Q1-2 DTU/45300 Wind turbine technology and aerodynamics/Shared Git/Wind_exam/Louis/Exercises/Deflection/data')
+# os.chdir('data')
+# os.chdir(r'G:/Other computers/Grote Laptop/Desktop/TU Delft/MSc EWEM 1/Q1-2 DTU/45300 Wind turbine technology and aerodynamics/Shared Git/Wind_exam/Louis/Exercises/Deflection/data')
 # path = 'Louis/Exercises/Deflection/data/'
-path = 'C:/Users/aldeg/Documents/Programming/Wind/Wind_Exam/Louis/Exercises/Deflection/data/'
+# path = 'C:/Users/aldeg/Documents/Programming/Wind/Wind_Exam/Louis/Exercises/Deflection/data/'
 
 bladestruc = np.loadtxt('bladestruc.txt')
 
@@ -61,7 +61,7 @@ def deflection(loads, structure, pitch):
 
 def nat_freq(r, structure, pitch):
     # m = 0.5 * (bladestruc[1:, 2] + bladestruc[:-1, 2])
-    m = bladestruc[:, 2]
+    m = bladestruc[1:, 2]
     M = np.diag(np.concatenate([m, m]))
     F = np.zeros(np.shape(M))
     N = len(r)
@@ -98,8 +98,8 @@ def nat_freq(r, structure, pitch):
 
     return eig_freq, mode_shapes
 
-Exercise = False
-Iterative = True
+Exercise = True
+Iterative = False
 
 if Iterative == True:
     #In this case (Exam 2020), iterate for constant pn until z deflection at tip = 5m
@@ -140,7 +140,7 @@ if Exercise == True:
         index = np.where(loads[:,0] == 58.5344)
         print(loads_file, 'My =',My[index],'\t Mz =',Mz[index])
 
-        plot = False
+        plot = True
         if plot == True:
             plt.rcParams['axes.grid'] = True
 

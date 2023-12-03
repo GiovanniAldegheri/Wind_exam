@@ -22,7 +22,7 @@ def VAWT_BEM(V_0, B, S, R, omega, dt, t_end):
     # Initialise t and a
     t = np.arange(0, t_end+dt, dt)
     a = np.zeros(len(t))
-
+    print(t)
     # initialise total rotated angle and local blade angle, relative to azimuth
     theta_gen = np.zeros(len(t))
     theta = np.zeros((len(t), B))
@@ -90,7 +90,6 @@ def VAWT_BEM(V_0, B, S, R, omega, dt, t_end):
             # find p_n, p_t
             p_n[t_i, b_i] = l * np.cos(AoA) + d * np.sin(AoA)
             p_t[t_i, b_i] = l * np.sin(AoA) - d * np.cos(AoA)
- 
 
         # Get total force in y, x and combined for all blades
         p_y_tot[t_i] = np.sum(p_y[t_i, :])
@@ -115,9 +114,9 @@ def VAWT_BEM(V_0, B, S, R, omega, dt, t_end):
     return t[1:], p_x[1:], p_y[1:], p_n[1:], p_t[1:], p_x_tot[1:], p_y_tot[1:], p_tot[1:], C_T[1:], C_P[1:], AoA_1[1:], W_0
 
 
-def VAWT_EXAM_BEM(V_0, B, S, R, omega, dt):
+def VAWT_EXAM_BEM(V_0, B, S, R, omega, d_angle):
     # Initialise t and a
-    t = np.arange(0, t_end+dt, dt)
+    t = np.arange(-10, 360, d_angle)
     a = np.zeros(len(t))
 
     # initialise total rotated angle and local blade angle, relative to azimuth
@@ -140,9 +139,9 @@ def VAWT_EXAM_BEM(V_0, B, S, R, omega, dt):
     AoA_1 = np.zeros((len(t), B))
 
     # Solver loop
-    for t_i in range(1, len(t)):
+    for t_i in range(len(t)):
         # Update total rotated angle based on constant omega
-        theta_gen[t_i] = theta_gen[t_i-1] + omega*dt
+        theta_gen[t_i] = np.radians(t[t_i])
 
         # TODO: Calculate W_0: induced wind at x=0 plane
         W_0 = a[t_i - 1] * V_0
@@ -150,7 +149,7 @@ def VAWT_EXAM_BEM(V_0, B, S, R, omega, dt):
         # Loop over every blade to find individual blade loads
         for b_i in range(B):
             # Calculate local angular position relative to azimuth
-            theta[t_i, b_i] = theta_gen[t_i] + 2*np.pi*(b_i-1)/B
+            theta[t_i, b_i] = theta_gen[t_i] + np.pi*(b_i)
 
             # Calc W_x,i and W_y,i
             x = -R * np.sin(theta[t_i, b_i])
@@ -161,37 +160,36 @@ def VAWT_EXAM_BEM(V_0, B, S, R, omega, dt):
             W_y = 0
 
             # Calculate all relative wind speeds
-            V_rel_x = omega*y + V_0 - W_x
-            V_rel_y = -omega*x + W_y
+            # V_rel_x = omega*y + V_0 - W_x
+            # V_rel_y = -omega*x + W_y
             V_norm = (V_0 - W_x)*np.sin(theta[t_i, b_i]) - W_y*np.cos(theta[t_i, b_i])
             V_tan = (V_0 - W_x)*np.cos(theta[t_i, b_i]) + W_y*np.sin(theta[t_i, b_i]) + omega*R
             V_rel = np.sqrt(V_norm ** 2 + V_tan ** 2)
 
             # Interpolate for Cd and Cl
             AoA = np.arctan(V_norm/V_tan)
-            Cl = np.interp(np.degrees(AoA), AoA_lst, Cl_lst)
-            Cd = np.interp(np.degrees(AoA), AoA_lst, Cd_lst)
-            # Cl = 0.1 * np.degrees(AoA)
-            # Cd = 0.01
-            
-            # if np.round(theta[t_i,0],2) in np.round(np.arange(np.pi/2 , 55*np.pi/2, 2*np.pi),2):
-            #     print('Blade',b_i,'\t Round error =',theta[t_i,b_i] % (np.pi/2), 'Cl =', Cl)
+            # Cl = np.interp(np.degrees(AoA), AoA_lst, Cl_lst)
+            # Cd = np.interp(np.degrees(AoA), AoA_lst, Cd_lst)
+            Cl = 0.1 * np.degrees(AoA)
+            Cd = 0.01
 
             # Store AoA for the blade
             AoA_1[t_i, b_i] = AoA
 
             # Find lift and drag forces
             l = 0.5 * rho * S * R / B * Cl * V_rel**2
+            if theta[t_i, b_i] == 0:
+                print(l)
             d = 0.5 * rho * S * R / B * Cd * V_rel**2
-            if b_i == 1:
-                print(f'{np.degrees(theta[t_i, b_i]):.2f}, {b_i}, lift = {l:.2f}')
+            if b_i == 0:
+                print(f'{np.degrees(theta[t_i, b_i]):.2f}, {b_i}, lift = {l:.2f}, Cl = {Cl:.2f}')
 
             # find p_x, p_y --> cb = cos beta, sb = sin beta
-            cb = V_rel_y / V_rel
-            sb = V_rel_x / V_rel
+            # cb = V_rel_y / V_rel
+            # sb = V_rel_x / V_rel
 
-            p_x[t_i, b_i] = l * cb + d * sb
-            p_y[t_i, b_i] = -l * sb + d * cb
+            # p_x[t_i, b_i] = l * cb + d * sb
+            # p_y[t_i, b_i] = -l * sb + d * cb
 
             # find p_n, p_t
             p_n[t_i, b_i] = l * np.cos(AoA) + d * np.sin(AoA)
@@ -242,7 +240,7 @@ if Exam:
     rho = 1.225                         # Density [kg/m3]
     tau = 2*R/V_0                       # Time factor [-]
     plot_start = 6                      # Indicate start time for plots
-    dt = 5e-4
+    dt = 1
 
     t, p_x, p_y, p_n, p_t, p_x_tot, p_y_tot, p_tot, C_T, C_P, AoA_1, W_x = VAWT_EXAM_BEM(V_0, B, S, R, omega, dt)
 
@@ -276,7 +274,7 @@ if not Exam:
     plot_start = 0          # Indicate start time for plots
     dt = 1e-3
 
-    B = np.arange(2, 3)
+    B = np.arange(3, 4)
     dt = 1e-3
     fig, (ax0, ax1) = plt.subplots(nrows=2, ncols=2, figsize=(14, 8))
     labels = []

@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 # os.chdir(r'Louis/Exercises')
 os.chdir(r'G:/Other computers/Grote Laptop/Desktop/TU Delft/MSc EWEM 1/Q1-2 DTU/45300 Wind turbine technology and aerodynamics/Shared Git/Wind_exam/Louis/Exercises/Deflection/data')
 # path = 'Louis/Exercises/Deflection/data/'
+path = 'C:/Users/aldeg/Documents/Programming/Wind/Wind_Exam/Louis/Exercises/Deflection/data/'
 
 bladestruc = np.loadtxt('bladestruc.txt')
 

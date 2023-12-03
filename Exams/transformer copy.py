@@ -93,6 +93,7 @@ if load:
     efficiency = power_out.real / power_in.real
 
     print(efficiency)
+    print(Vl)
     # print_list(Ll_s,Vl,'zl_p','power factor')
 
 else:

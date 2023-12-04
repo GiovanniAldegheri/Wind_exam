@@ -80,8 +80,8 @@ def force_coeffs(localalpha,thick,aoa_tab,cl_tab,cd_tab,cm_tab):
     Cm=np.interp (thick,thick_prof,cm_aoa[0,:])
     return Cl, Cd, Cm 
 
-def BEM(TSR,pitch,r,c,twist,thick,aoa_tab,cl_tab,cd_tab,cm_tab):
-    omega = TSR * Vo / R
+def BEM(TSR,pitch,r,c,twist,thick,aoa_tab,cl_tab,cd_tab,cm_tab,omega):
+    TSR = omega * R / Vo
     a = 0
     aprime = 0
     convergenceFactor = 1e-10
@@ -132,9 +132,9 @@ def BEM(TSR,pitch,r,c,twist,thick,aoa_tab,cl_tab,cd_tab,cm_tab):
 
     return Pn, Pt
 
-def single_BEM_loop():
+def single_BEM_loop(omega):
     for k in range(len(r_ref)):
-        Pn, Pt = BEM(TSR,pitch,r_ref[k],c_ref[k],beta_ref[k],tc_ref[k],aoa_tab,cl_tab,cd_tab,cm_tab)
+        Pn, Pt = BEM(TSR,pitch,r_ref[k],c_ref[k],beta_ref[k],tc_ref[k],aoa_tab,cl_tab,cd_tab,cm_tab,omega)
         # print(r_ref[k], Pn)
         Pn_lst[k] = Pn
         Pt_lst[k] = Pt
@@ -156,7 +156,8 @@ Vo = 10
 #Interpolate over r, tip speed ratio and pitch
 
 # RPM = 1.5
-omega = 1.5
+omega = np.arange(0.1,2,0.01)
+omega = np.round(omega,2)
 TSR = omega * R / Vo
 # TSR = np.arange(RPM*R/Vo,RPM*R/Vo+1)
 
@@ -175,25 +176,23 @@ pitch_max = 0
 Pn_lst = np.zeros(len(r_ref))
 Pt_lst = np.zeros(len(r_ref))
 
-def iterative_BEM_loop_pitch():
-    pitch = np.arange(5,15,0.1)
-    pitch = np.round(pitch,1)
-    P = 0
 
-    for ii, pitch in enumerate(pitch):
-        P, T, Cp, Ct, Pn_lst, Pt_lst = single_BEM_loop()
-        print('Pitch = ',pitch,'[deg] \t P = ',P,'[W]')
-        if P <= 10e6:
-            break
+def iterative_BEM_loop_EXAM2023(omega):
+    P = 1
+    w_store = []
+    P_store = []
+    count = 0
+    for ii, w in enumerate(omega):
+        P, T, Cp, Ct, Pn_lst, Pt_lst = single_BEM_loop(w)
+        print('omega = ',w,'[rad/s] \t P = ',P,'[W]')
+        w_store.append(w)
+        P_store.append(P)
 
-def get_loads():
-    P, T, Cp, Ct, Pn_lst, Pt_lst = single_BEM_loop()
+        if P <= 0 and count == 0:
+            w_0, P_0 = w, P
+            count += 1
+            
+    print('w_0', w_0, '[rad/s]', 'P_0', P_0 ,'[W]')
 
-    #When asked to plot deflection at certain conditions, copy output to loads_custom.txt and run deflection.py
-    print('# Vo=',Vo,'m/s, pitch=',pitch,' deg, omega=',omega,' rad/s')
-    print('#    r [m]   pn [kN/m]  pt [kN/m]')
-    for i in range(len(Pn_lst)):
-        print('  ',round(r_ref[i],4),'  ',round(Pn_lst[i]/1000,4),'  ',round(Pt_lst[i]/1000,4))
-    print('   89.1660         0         0')
 
-get_loads()
+iterative_BEM_loop_EXAM2023(omega)

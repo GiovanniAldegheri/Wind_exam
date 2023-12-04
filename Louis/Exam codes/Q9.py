@@ -26,19 +26,6 @@ def line_to_line(V): #brings single phase voltage to line to line
 def line_to_neutral(V):
     return V/np.sqrt(3)
 
-def print_list(x, y,x_label, y_label):
-    print(x_label,'\t',y_label)
-    for i in range(len(x)):
-        print(x[i],'\t',y[i])
-    plt.figure()
-    plt.xlabel(x_label)
-    plt.ylabel(y_label)
-    plt.grid()
-    plt.plot(x, y.real, label='real')
-    if np.iscomplex(y[0]):
-        plt.plot(x, y.imag, label='imag')
-    plt.legend()
-    plt.show()
 
 def complex_equations(vars, V1, z1, z2, zm, zl):
     # Unpack the variables
@@ -224,6 +211,5 @@ else:
             print('1_1 =', I1_module[index])
             count += 1
 
-    
-    print_list(I1_module, efficiency, r'$|I_1|$ [A]','Efficiency')
+
 

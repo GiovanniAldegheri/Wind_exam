@@ -134,20 +134,20 @@ def BEM(TSR,pitch,r,c,twist,thick,aoa_tab,cl_tab,cd_tab,cm_tab):
 #Constants______________
 R = 89.17 #m
 B = 3
-rho = 1.225 #kg/m3
-Vo = 10
+rho = 1.3 #kg/m3
+Vo = 15
 
 # Vo=6m/s, pitch=0.896 deg, omega=0.6283 rad/s
 
 #Interpolate over r, tip speed ratio and pitch
 
-omega = 1.5       #rad/s
-# TSR = np.arange(omega*R/Vo,omega*R/Vo+1)
+omega = 1.02       #rad/s
+TSR = np.arange(omega*R/Vo,omega*R/Vo+1)
 # TSR = np.arange(0,10+1,1)
-TSR = np.arange(15.19469,15.195,1)
+# TSR = np.arange(15.19469,15.195,1)
 
 # pitch = np.arange(-3,4+1,1)
-pitch = np.arange(0,1)
+pitch = np.arange(-13.98,-13.97,0.0001)
 
 #Blade characteristics
 P_max = 0

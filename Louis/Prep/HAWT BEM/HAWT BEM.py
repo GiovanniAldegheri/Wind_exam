@@ -80,8 +80,8 @@ def force_coeffs(localalpha,thick,aoa_tab,cl_tab,cd_tab,cm_tab):
     Cm=np.interp (thick,thick_prof,cm_aoa[0,:])
     return Cl, Cd, Cm 
 
-def BEM(TSR,pitch,r,c,twist,thick,aoa_tab,cl_tab,cd_tab,cm_tab):
-    omega = TSR * Vo / R
+def BEM(omega,pitch,r,c,twist,thick,aoa_tab,cl_tab,cd_tab,cm_tab,Vo):
+    TSR = omega * R / Vo
     a = 0
     aprime = 0
     convergenceFactor = 1e-10
@@ -132,9 +132,9 @@ def BEM(TSR,pitch,r,c,twist,thick,aoa_tab,cl_tab,cd_tab,cm_tab):
 
     return Pn, Pt
 
-def single_BEM_loop(pitch):
+def single_BEM_loop(Vo):
     for k in range(len(r_ref)):
-        Pn, Pt = BEM(TSR,pitch,r_ref[k],c_ref[k],beta_ref[k],tc_ref[k],aoa_tab,cl_tab,cd_tab,cm_tab)
+        Pn, Pt = BEM(omega,pitch,r_ref[k],c_ref[k],beta_ref[k],tc_ref[k],aoa_tab,cl_tab,cd_tab,cm_tab,Vo)
         # print(r_ref[k], Pn)
         Pn_lst[k] = Pn
         Pt_lst[k] = Pt
@@ -151,17 +151,19 @@ def single_BEM_loop(pitch):
 R = 89.17 #m
 B = 3
 rho = 1.225 #kg/m3
-Vo = 15
+# Vo = 15
+Vo = np.arange(7,20,0.1)
+Vo = np.round(Vo,1)
 
 #Interpolate over r, tip speed ratio and pitch
 
 # RPM = 1.5
-omega = 1.02
-TSR = omega * R / Vo
+omega = 1.5
+# TSR = omega * R / Vo
 # TSR = np.arange(RPM*R/Vo,RPM*R/Vo+1)
 
 # pitch = np.arange(0,1)
-# pitch = 0
+pitch = 0
 
 #Blade characteristics
 P_max = 0
@@ -186,24 +188,24 @@ def iterative_BEM_loop_pitch():
         if P <= 10e6:
             break
 
-def iterative_BEM_loop_EXAM2023(omega):
+def iterative_BEM_loop_EXAM2023(x):
     P = 1
-    w_store = []
+    Vo_store = []
     P_store = []
     count = 0
-    for ii, w in enumerate(omega):
-        P, T, Cp, Ct, Pn_lst, Pt_lst = single_BEM_loop(w)
-        print('omega = ',w,'[rad/s] \t P = ',P,'[W]')
-        w_store.append(w)
+    for ii, Vo in enumerate(x):
+        P, T, Cp, Ct, Pn_lst, Pt_lst = single_BEM_loop(Vo)
+        print('Vo = ',Vo,'[m/s] \t P = ',P,'[W]')
+        Vo_store.append(Vo)
         P_store.append(P)
 
-        if P <= 0 and count == 0:
-            w_0, P_0 = w, P
+        if P >= 10e6 and count == 0:
+            v_0, P_0 = Vo, P
             count += 1
             
-    print('w_0', w_0, '[rad/s]', 'P_0', P_0 ,'[W]')
-    plt.plot(omega,P_store)
-    plt.xlabel('omega [rad/s]')
+    print('V_0', v_0, '[m/s]', 'P_0', P_0 ,'[W]')
+    plt.plot(Vo_store,P_store)
+    plt.xlabel('Vo [m/s]')
     plt.ylabel('P [W]')
     plt.show()
 
@@ -217,4 +219,6 @@ def get_loads():
         print('  ',round(r_ref[i],4),'  ',round(Pn_lst[i]/1000,4),'  ',round(Pt_lst[i]/1000,4))
     print('   89.1660         0         0')
 
-iterative_BEM_loop_pitch()
+iterative_BEM_loop_EXAM2023(Vo)
+
+# P =  22175125.080722693 [W]
